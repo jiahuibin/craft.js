@@ -2,7 +2,9 @@ import { Editor, Frame, Element } from '@craftjs/core';
 import { createMuiTheme } from '@material-ui/core';
 import { ThemeProvider } from '@material-ui/core/styles';
 import { NextSeo } from 'next-seo';
-import React from 'react';
+import React, { useEffect } from 'react';
+
+import { TextJSON, TextJSON2 } from './test';
 
 import { Viewport, RenderNode } from '../components/editor';
 import { Container, Text } from '../components/selectors';
@@ -11,7 +13,6 @@ import { Custom1, OnlyButtons } from '../components/selectors/Custom1';
 import { Custom2, Custom2VideoDrop } from '../components/selectors/Custom2';
 import { Custom3, Custom3BtnDrop } from '../components/selectors/Custom3';
 import { Video } from '../components/selectors/Video';
-
 const theme = createMuiTheme({
   typography: {
     fontFamily: [
@@ -25,6 +26,9 @@ const theme = createMuiTheme({
 });
 
 function App() {
+  useEffect(() => {
+    console.info('jhb ~pages line:29 测试代码 -----');
+  }, []);
   return (
     <ThemeProvider theme={theme}>
       <div className="h-full h-screen">
@@ -51,10 +55,10 @@ function App() {
             Video,
           }}
           enabled={false}
-          onRender={RenderNode}
+          // onRender={RenderNode}
         >
           <Viewport>
-            <Frame>
+            <Frame json={TextJSON2}>
               <Element
                 canvas
                 is={Container}

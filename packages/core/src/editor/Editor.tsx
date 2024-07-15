@@ -1,5 +1,6 @@
 import { ERROR_RESOLVER_NOT_AN_OBJECT, HISTORY_ACTIONS } from '@craftjs/utils';
-import React, { useEffect, useRef } from 'react';
+import { DndContext, DragOverlay } from '@dnd-kit/core';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import invariant from 'tiny-invariant';
 
 import { EditorContext } from './EditorContext';
@@ -90,7 +91,7 @@ export const Editor = ({ children, ...options }: EditorProps) => {
       editorOptions.enabled = options.enabled;
     });
   }, [context, options.enabled]);
-
+  const [selected, setSelected] = useState();
   useEffect(() => {
     context.subscribe(
       (_) => ({
@@ -100,15 +101,79 @@ export const Editor = ({ children, ...options }: EditorProps) => {
         context.query.getOptions().onNodesChange(context.query);
       }
     );
+
+    const currentNodeId = context.query.getEvent('selected').last();
+    console.info('jhb ~  2024/7/15  selected line:119 -----', currentNodeId);
+    // setSelected(currentNodeId);
   }, [context]);
 
   if (!context) {
     return null;
   }
+  const handleDragStart = (e) => {
+    const {
+      active: { id },
+    } = e;
+    setSelected(id);
+    console.info('jhb ~  2024/7/15  active line:116 -----', id);
+  };
+  const handleDragEnd = (e) => {
+    console.info('jhb ~  2024/7/15  e line:111 -----', e);
+    console.info('jhb ~  2024/7/15  context line:118 -----', context);
+    console.info(
+      'jhb ~  2024/7/15  context line:118 -----',
+      context.getState()
+    );
 
+    const {
+      active: { id: currentId },
+      over: { id: targetId },
+    } = e;
+    console.info(
+      'jhb ~  2024/7/15  currentId line:122 -----',
+      currentId,
+      targetId
+    );
+    const { nodes = {} } = context.getState();
+    const parentId = nodes?.[targetId]?.data?.parent || 'ROOT';
+    const currentParentId = nodes?.[currentId]?.data?.parent || 'ROOT';
+    // 父节点相同时
+    if (currentParentId === parentId) {
+      const currentIndex = nodes?.[parentId]?.data?.nodes?.findIndex((id) => {
+        return id === currentId;
+      });
+      const targetIndex = nodes?.[parentId]?.data?.nodes?.findIndex((id) => {
+        return id === targetId;
+      });
+      if (currentIndex < targetIndex) {
+        context.actions.move(currentId, parentId, targetIndex + 1);
+      } else {
+        context.actions.move(currentId, parentId, targetIndex);
+      }
+    } else {
+      // todo 父节点不一样的情况
+    }
+  };
+  const renderDragOverlay = useMemo(() => {
+    console.info('jhb ~  2024/7/15  selected line:153 -----', selected);
+    return (
+      <DragOverlay dropAnimation={null}>
+        {/*{selected ? <NodeElement id={selected} key={selected} /> : null}*/}
+      </DragOverlay>
+    );
+  }, [selected]);
   return (
     <EditorContext.Provider value={context}>
-      <Events>{children}</Events>
+      <Events>
+        <DndContext
+          onDragEnd={handleDragEnd}
+          onDragStart={handleDragStart}
+          autoScroll
+        >
+          {children}
+          {renderDragOverlay}
+        </DndContext>
+      </Events>
     </EditorContext.Provider>
   );
 };

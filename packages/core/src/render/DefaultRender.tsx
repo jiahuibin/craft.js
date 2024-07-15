@@ -1,3 +1,6 @@
+import { useDroppable } from '@dnd-kit/core';
+import { SortableContext } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import React, { useMemo } from 'react';
 
 import { SimpleElement } from './SimpleElement';
@@ -15,16 +18,51 @@ export const DefaultRender = () => {
       hydrationTimestamp: node._hydrationTimestamp,
     })
   );
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+  } = useDroppable({
+    id: 'canvas_droppable',
+    data: {
+      parent: null,
+      isContainer: true,
+    },
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
 
   return useMemo(() => {
     let children = props.children;
-
     if (nodes && nodes.length > 0) {
+      console.info(
+        'jhb ~  2024/7/15  nodes.map((id: NodeId) => id) line:43 -----',
+        nodes.map((id: NodeId) => id)
+      );
+
       children = (
         <React.Fragment>
-          {nodes.map((id: NodeId) => (
-            <NodeElement id={id} key={id} />
-          ))}
+          <SortableContext items={nodes.map((id: NodeId) => id)}>
+            {/*这里是容器*/}
+            <div
+              ref={setNodeRef}
+              className="canvas"
+              style={style}
+              {...attributes}
+              {...listeners}
+            >
+              <div className="canvas-fields">
+                {nodes.map((id: NodeId, i) => (
+                  <NodeElement id={id} key={id} index={i} />
+                ))}
+              </div>
+            </div>
+          </SortableContext>
         </React.Fragment>
       );
     }

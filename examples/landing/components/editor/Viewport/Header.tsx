@@ -52,11 +52,14 @@ const Item = styled.a<{ disabled?: boolean }>`
 `;
 
 export const Header = () => {
-  const { enabled, canUndo, canRedo, actions } = useEditor((state, query) => ({
-    enabled: state.options.enabled,
-    canUndo: query.history.canUndo(),
-    canRedo: query.history.canRedo(),
-  }));
+  const { enabled, canUndo, canRedo, actions, query } = useEditor(
+    (state, query) => ({
+      enabled: state.options.enabled,
+      canUndo: query.history.canUndo(),
+      canRedo: query.history.canRedo(),
+      query: query,
+    })
+  );
 
   return (
     <HeaderDiv className="header text-white transition w-full">
@@ -85,6 +88,11 @@ export const Header = () => {
               },
             ])}
             onClick={() => {
+              console.info(
+                'jhb ~  2024/7/15  query line:89 -----',
+                query.serialize()
+              );
+
               actions.setOptions((options) => (options.enabled = !enabled));
             }}
           >
